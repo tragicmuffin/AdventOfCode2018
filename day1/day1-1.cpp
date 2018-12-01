@@ -9,7 +9,7 @@
 int main() {
 
     std::ifstream input;
-    input.open("day1-1_input.txt");
+    input.open("day1_input.txt");
 
     int freq = 0;
     int num;

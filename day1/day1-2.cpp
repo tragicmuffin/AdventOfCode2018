@@ -16,7 +16,7 @@ int main() {
     std::vector<int> seenFreqs;
     seenFreqs.emplace_back(0);
     while (true) {  // loops through file until a match is found
-        input.open("day1-1_input.txt");
+        input.open("day1_input.txt");
 
         while (input >> num) {  // passes one 'word' at a time to num
             freq += num;
