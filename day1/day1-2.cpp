@@ -1,37 +1,38 @@
 // Advent of Code 2018: Day 1, Part 2
 // https://adventofcode.com/2018/day/1#part2
 // Jesse Williams
-// Answer:
+// Answer: 83130
 
 #include <fstream>
 #include <iostream>
-
-#define listLength 1004
+#include <vector>
 
 int main() {
 
     std::ifstream input;
-    input.open("day1-1_input.txt");
 
-    int freq = 0;
-    int seenFreqs [listLength];
-    seenFreqs[0] = 0;
-    int i = 1;
     int num;
-    while (input >> num) {  // passes one 'word' at a time to num
-        freq += num;
+    int freq = 0;
+    std::vector<int> seenFreqs;
+    seenFreqs.emplace_back(0);
+    while (true) {  // loops through file until a match is found
+        input.open("day1-1_input.txt");
 
-        for (int j = 0; j <= i; j++) {
-            if (seenFreqs[j] == freq) {
-                std::cout << freq;
-                return 0;
+        while (input >> num) {  // passes one 'word' at a time to num
+            freq += num;
+
+            for (auto j = seenFreqs.begin(); j != seenFreqs.end(); ++j) {
+                if (*j == freq) {
+                    std::cout << freq;
+                    return 0;
+                }
             }
+
+            seenFreqs.emplace_back(freq);
         }
 
-        seenFreqs[i] = freq;
-        i++;
+        input.close();
     }
 
-    std::cout << "fuck";
     return 0;
 }
