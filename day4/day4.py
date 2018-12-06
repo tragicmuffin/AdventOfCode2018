@@ -1,10 +1,11 @@
 ## Advent of Code 2018: Day 4
 ## https://adventofcode.com/2018/day/4
 ## Jesse Williams
-## Answers: [Part 1]: 77941, [Part 2]:
+## Answers: [Part 1]: 77941, [Part 2]: 35289
 
 import re
 import datetime
+from collections import Counter
 
 class LogDay(object):
     '''
@@ -77,11 +78,11 @@ if __name__ == "__main__":
                 allLogDays.append(LogDay(logBatch))  # commit batch into LogDay object and add to list
             logBatch = [log]  # clear batch and put in current entry to start new day
 
+    ## Part 1
     # Fill a dictionary with the time each guard was asleep
     guardSleepTime = {}
     for day in allLogDays:
         #print('Date: {} - ID: {} - Time asleep: {}'.format(day.dateString, day.guardID, day.timeAsleep))
-
         try:
             guardSleepTime[day.guardID] = guardSleepTime[day.guardID] + day.timeAsleep
         except KeyError:
@@ -91,7 +92,7 @@ if __name__ == "__main__":
         print('Guard #{} asleep for a total of {} minutes.'.format(key, guardSleepTime[key]))
 
 
-    sleepiestGuard = list(filter(lambda x:x[1] == max(guardSleepTime.values()), guardSleepTime.items()))[0]
+    sleepiestGuard = list(filter(lambda x:x[1] == max(guardSleepTime.values()), guardSleepTime.items()))[0]  # returns (key, value) pair with max value
 
     # Search all LogDay objects, filter only the days when the sleepiest guard was on duty, and accumulate minutes asleep into a 60-array
     sleepiestGuardsMinutes = [0]*60
@@ -103,3 +104,22 @@ if __name__ == "__main__":
     sleepiestGuardsSleepiestMinute = sleepiestGuardsMinutes.index(max(sleepiestGuardsMinutes))
 
     print('Guard #{} sleeps the most with a total of {} minutes, most frequently during minute {}.'.format(sleepiestGuard[0], sleepiestGuard[1], sleepiestGuardsSleepiestMinute))
+
+    ## Part 2
+    # Fill a dictionary with the list of times each guard was asleep
+    guardSleepTimes = {}
+    for day in allLogDays:
+        try:
+            guardSleepTimes[day.guardID] = guardSleepTimes[day.guardID] + day.sleepingMinutes
+        except KeyError:
+            guardSleepTimes[day.guardID] = day.sleepingMinutes
+
+
+    sleepiestGuardMinuteFrequency = (0, 0, 0)  # (guardID, minute, frequency)
+    for guardID in guardSleepTimes:
+        guardSleepTimeCounts = Counter(guardSleepTimes[guardID])  # v (minute, frequency)
+        minuteAndFrequency = list(filter(lambda x:x[1] == max(guardSleepTimeCounts.values()), guardSleepTimeCounts.items()))[0]
+        if (minuteAndFrequency[1] > sleepiestGuardMinuteFrequency[2]):
+            sleepiestGuardMinuteFrequency = (guardID, minuteAndFrequency[0], minuteAndFrequency[1])
+
+    print('Guard #{} was asleep the most frequently on minute {} with a frequency of {}.'.format(sleepiestGuardMinuteFrequency[0], sleepiestGuardMinuteFrequency[1], sleepiestGuardMinuteFrequency[2]))
