@@ -56,4 +56,4 @@ if __name__ == "__main__":
         print('Removing all {}/{} units, the fully-reacted polymer has a length of {}.'.format(badUnit, badUnit.upper(), len(polymerReducedReacted)))
 
     shortestReducedPolymer = list(filter(lambda x:x[1] == min(polymerReducedLengths.values()), polymerReducedLengths.items()))[0]
-    print('\nThe shortest reduced polymer has length {}.\n'.format(shortestReducedPolymer))
+    print('\nThe shortest reduced polymer has length {}.\n'.format(shortestReducedPolymer[1]))
