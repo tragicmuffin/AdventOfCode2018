@@ -1,7 +1,7 @@
 ## Advent of Code 2018: Day 6
 ## https://adventofcode.com/2018/day/6
 ## Jesse Williams
-## Answers: [Part 1]: , [Part 2]:
+## Answers: [Part 1]: 4284, [Part 2]:
 
 import re, pickle
 import numpy as np
@@ -16,6 +16,8 @@ COLLISIONS = []
 
 def voronoiStep(coordMatrix, coordDict):
     # Takes a matrix and expands each entry in all Manhattan directions, clearing the entry if a collision is found(?)
+    maxSizeX = coordMatrix.shape[1]
+    maxSizeY = coordMatrix.shape[0]
     allStepCoords = []  # keeps track of all coords added so far this step to check for collisions
     global COLLISIONS
     for label in coordDict:
@@ -25,7 +27,9 @@ def voronoiStep(coordMatrix, coordDict):
             step_NS = [y-1, y+1]
 
             for m in step_EW:
-                if (m, y) in allStepCoords and (m, y) not in COLLISIONS:  # if this coord has been a collision, skip it
+                if m >= maxSizeX or m < 0:
+                    pass  # if we're trying to create a coord point outside of frame, skip it
+                elif (m, y) in allStepCoords and (m, y) not in COLLISIONS:  # if this coord has been a collision, skip it
                     COLLISIONS.append((m, y))
                 elif (m, y) not in coordDict[label] and (m, y) not in newCoords:
                     newCoords.append((m, y))
@@ -36,7 +40,9 @@ def voronoiStep(coordMatrix, coordDict):
                             newCoords.remove((m, y))
 
             for n in step_NS:
-                if (x, n) in allStepCoords and (x, n) not in COLLISIONS:  # if this coord has been a collision, skip it
+                if n >= maxSizeY or n < 0:
+                    pass  # if we're trying to create a coord point outside of frame, skip it
+                elif (x, n) in allStepCoords and (x, n) not in COLLISIONS:  # if this coord has been a collision, skip it
                     COLLISIONS.append((x, n))
                 elif (x, n) not in coordDict[label] and (x, n) not in newCoords:
                     newCoords.append((x, n))
@@ -97,6 +103,17 @@ def measureAreas(coordMatrix, coordDict):
     for label in coordDict:
         areaDict[label] = coordMatrixList.count(label)
     return areaDict
+
+def findUnboundedAreas(coordMatrix):
+    (M, N) = coordMatrix.shape
+    bN = list(coordMatrix[0, :])  # north border
+    bS = list(coordMatrix[M-1, :])  # south border
+    bW = list(coordMatrix[:, 0])  # west border
+    bE = list(coordMatrix[:, N-1])  # east border
+
+    # Returns an unordered list of unduplicated labels with unbounded areas
+    return list(set(bN+bS+bW+bE))
+
 
 def expandMatrix(matrix, scale):
     # Expands a matrix by a given (int) scale for rendering
@@ -162,25 +179,36 @@ if __name__ == "__main__":
         EMPTY_LABEL = NUM_COORDS+1
         coordMatrix, coordDict = createCoordMatrix(coordList)
 
-    scale = 1
-    fig, colormap = initializeRender(coordMatrix, scale)
-    done = False
-    i = 0
-    updateRender(coordMatrix, scale, fig, colormap, realtime=False)
-    while not done:
-        i += 1
-        coordMatrix, coordDict = voronoiStep(coordMatrix, coordDict)
+    if not voronoiFinished(coordMatrix):
+        scale = 1
+        fig, colormap = initializeRender(coordMatrix, scale)
+        done = False
         updateRender(coordMatrix, scale, fig, colormap, realtime=False)
+        while not done:
+            coordMatrix, coordDict = voronoiStep(coordMatrix, coordDict)
+            updateRender(coordMatrix, scale, fig, colormap, realtime=False)
 
-        with open('day6_snapshot.p', 'wb') as f:
-            pickle.dump((FRAME, coordMatrix, coordDict, COLLISIONS), f)
+            with open('day6_snapshot.p', 'wb') as f:
+                pickle.dump((FRAME, coordMatrix, coordDict, COLLISIONS), f)
 
-        if voronoiFinished(coordMatrix):
-            done = True
+            if voronoiFinished(coordMatrix):
+                done = True
 
     areaDict = measureAreas(coordMatrix, coordDict)
-    #for label in areaDict:
-    #    print('{}: {}'.format(label, areaDict[label]))
 
-    largestArea = list(filter(lambda x:x[1] == min(areaDict.values()), areaDict.items()))[0]
-    print('Coordinate point with label {} has the largest area at {}.'.format(largestArea[0], largestArea[1]))
+    for label in areaDict:
+        print('{}: {}'.format(label, areaDict[label]))
+
+    # Remove labels with unbounded areas
+    boundedAreaDict = areaDict.copy()
+    unboundedLabels = findUnboundedAreas(coordMatrix)
+    for label in unboundedLabels:
+        if label not in [0, EMPTY_LABEL]:
+            del boundedAreaDict[label]
+
+    print('\n--------\n')
+    for label in boundedAreaDict:
+        print('{}: {}'.format(label, areaDict[label]))
+
+    largestArea = list(filter(lambda x:x[1] == max(boundedAreaDict.values()), boundedAreaDict.items()))[0]
+    print('\nCoordinate point with label {} has the largest (bounded) area at {}.'.format(largestArea[0], largestArea[1]))
