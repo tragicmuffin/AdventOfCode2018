@@ -29,7 +29,6 @@ def applyReactions(polymer):
     return polymer
 
 
-
 if __name__ == "__main__":
     # Capture the input unit stream as a string, then convert to list
     with open('day5_input.txt') as f:
