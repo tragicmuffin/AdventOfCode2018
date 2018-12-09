@@ -1,7 +1,7 @@
 ## Advent of Code 2018: Day 6
 ## https://adventofcode.com/2018/day/6
 ## Jesse Williams
-## Answers: [Part 1]: 4284, [Part 2]:
+## Answers: [Part 1]: 4284, [Part 2]: 35490
 
 import re, pickle
 import numpy as np
@@ -156,8 +156,24 @@ def updateRender(coordMatrix, scale, fig, colormap, realtime=True):
     plt.savefig('img/voronoi_frame{}.png'.format(FRAME))
     FRAME += 1
 
+def totalManhattanDistance(testCoords):
+    initCoordList = []
+    with open('day6_input.txt') as f:
+        pattern = re.compile(r"(\d+),\s(\d+)")
+        while True:
+            line = f.readline()
+            if line == '': break
+            matches = pattern.match(line)
+            initCoordList.append(tuple([int(i) for i in matches.groups()]))
+
+    dist = 0
+    for initCoords in initCoordList:
+        dist += abs(testCoords[0] - initCoords[0]) + abs(testCoords[1] - initCoords[1])
+
+    return dist
 
 if __name__ == "__main__":
+    ## Part 1
     try:
         with open('day6_snapshot.p', 'rb') as f:
             (FRAME, coordMatrix, coordDict, COLLISIONS) = pickle.load(f)
@@ -196,9 +212,6 @@ if __name__ == "__main__":
 
     areaDict = measureAreas(coordMatrix, coordDict)
 
-    for label in areaDict:
-        print('{}: {}'.format(label, areaDict[label]))
-
     # Remove labels with unbounded areas
     boundedAreaDict = areaDict.copy()
     unboundedLabels = findUnboundedAreas(coordMatrix)
@@ -206,9 +219,27 @@ if __name__ == "__main__":
         if label not in [0, EMPTY_LABEL]:
             del boundedAreaDict[label]
 
-    print('\n--------\n')
-    for label in boundedAreaDict:
-        print('{}: {}'.format(label, areaDict[label]))
+    # for label in areaDict:
+    #     print('{}: {}'.format(label, areaDict[label]))
+    # print('\n--------\n')
+    # for label in boundedAreaDict:
+    #     print('{}: {}'.format(label, areaDict[label]))
 
     largestArea = list(filter(lambda x:x[1] == max(boundedAreaDict.values()), boundedAreaDict.items()))[0]
     print('\nCoordinate point with label {} has the largest (bounded) area at {}.'.format(largestArea[0], largestArea[1]))
+
+
+    ## Part 2
+    # For each location in space, sum the distances to all coord points.
+    distanceDict = {}
+    for y in range(coordMatrix.shape[0]):
+        for x in range(coordMatrix.shape[1]):
+            distanceDict[(x, y)] = totalManhattanDistance((x,y))
+
+    # Remove any distances greater than the max 10000
+    validDistanceDict = {}
+    for dist in distanceDict:
+        if (distanceDict[dist] < 10000):
+            validDistanceDict[dist] = distanceDict[dist]
+
+    print('\nThe region containing all locations with a distance sum of less than 10000 from all coordinate points is size {}.'.format(len(validDistanceDict)))
