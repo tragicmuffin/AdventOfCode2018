@@ -1,7 +1,7 @@
 ## Advent of Code 2018: Day 8
 ## https://adventofcode.com/2018/day/8
 ## Jesse Williams
-## Answers: [Part 1]: 36566, [Part 2]:
+## Answers: [Part 1]: 36566, [Part 2]: 30548
 
 class Node(object):
     def __init__(self, chs, mds):
